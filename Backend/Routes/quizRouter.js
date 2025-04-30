@@ -142,7 +142,7 @@ router.post('/', verifyUser,upload.single('file'), async (req, res) => {
 
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ success: false, error: 'Internal server error' });
+        res.status(500).json({ success: false, error: error});
     }
 });
 
