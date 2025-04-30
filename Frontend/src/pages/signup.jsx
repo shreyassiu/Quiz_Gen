@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef,useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
-import { handleSuccess, handleError } from '../utils'
+import { handleSuccess, handleError ,checkTokenValidity} from '../utils'
 import 'react-toastify/ReactToastify.css'
 import Navbar from '../components/Navbar'
 
@@ -17,6 +17,12 @@ const Signup = () => {
   const iconRef = useRef()
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (checkTokenValidity()) {
+      navigate('/quizzes')
+    }
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import  Navbar  from '../components/Navbar';
+import { checkTokenValidity } from '../utils';
 
 const LOCAL_STORAGE_KEY = 'quizAppState';
 
@@ -15,6 +16,7 @@ const QuizPage = () => {
       navigate('/upload');
     }
   }, [quiz, navigate]);
+
 
   const [selectedAnswers, setSelectedAnswers] = useState(() => {
     const saved = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
@@ -74,7 +76,6 @@ const QuizPage = () => {
       <div className="bg-[#0f0f0f] min-h-screen text-white px-4 py-10">
         <div className="max-w-3xl mx-auto bg-[#1e1e1e] p-8 rounded-xl shadow-lg">
           <h1 className="text-3xl font-bold font-mono text-center mb-6">{quiz.quizTitle}</h1>
-
           {submitted && (
             <div className="text-center mb-6 text-green-400 font-semibold text-xl">
               Score: {score} / {quiz.questions.length}

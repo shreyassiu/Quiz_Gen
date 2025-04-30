@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react' // ✅ Added useEffect
 import { Link, useNavigate } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import { handleSuccess, handleError, checkTokenValidity } from '../utils'
@@ -17,6 +17,13 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
 
+  // ✅ Redirect to /quizzes if already logged in
+  useEffect(() => {
+    if (checkTokenValidity()) {
+      navigate('/quizzes')
+    }
+  }, [])
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setLoginInfo((prev) => ({ ...prev, [name]: value }))
@@ -34,7 +41,7 @@ const Login = () => {
     const { email, password } = loginInfo
     if (!email || !password) return handleError('Please fill all the fields')
     setIsLoading(true)
-    
+
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -60,10 +67,10 @@ const Login = () => {
       handleError(err.message)
     }
   }
-  
+
   return (
     <div className="bg-[#0f0f0f] min-h-screen text-white">
-      <Navbar/>
+      <Navbar />
       <div className="w-full flex justify-center items-center py-20">
         <div className="bg-[#1e1e1e] p-10 rounded-2xl shadow-2xl w-full max-w-md">
           <h1 className="text-3xl font-bold font-mono mb-8 text-center">Welcome Back</h1>
