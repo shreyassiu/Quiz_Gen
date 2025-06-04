@@ -21,6 +21,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "form-data": "^4.0.2",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "langchain": "^0.3.24",
@@ -30,6 +31,7 @@
     "openai": "^4.95.0",
     "path": "^0.12.7",
     "pdf-parse": "^1.1.1",
+    "pdf2pic": "^3.1.4",
     "tesseract.js": "^4.1.1"
   }
 }

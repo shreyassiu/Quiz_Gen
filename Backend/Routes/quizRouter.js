@@ -15,7 +15,7 @@ const embedChunks = require('../utils/embedChunks.js');
 const { cosineSimilarity } = require('../utils/similarity.js'); // We'll create this
 const verifyUser = require('../Middlewares/QuizValidation.js')
 const Quiz = require('../Models/Quiz.js'); // Assuming you have a Quiz model defined    
-
+const convertPdfToImages = require('../utils/convertPdfToImages.js'); // Assuming you have a function to convert PDF to images
 
 const apiKey = process.env.GOOGLE_API_KEY;
 const storage = multer.diskStorage({
@@ -28,7 +28,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.get('/', verifyUser,async (req, res) => {
+router.get('/', verifyUser, async (req, res) => {
     const email = req.headers.email;
     if (!email) {
         return res.status(400).json({ success: false, error: 'Email header is required' });
@@ -42,25 +42,38 @@ router.get('/', verifyUser,async (req, res) => {
 });
 
 
-router.post('/', verifyUser,upload.single('file'), async (req, res) => {
+router.post('/', verifyUser, upload.single('file'), async (req, res) => {
     try {
         const { topics, description, difficulty, numQuestions } = req.body;
         const filePath = req.file.path;
 
         let text1 = await readFileBasedOnType(filePath);
         if (text1.length < 10) {
+            const images = await convertPdfToImages(filePath);
+            let trText = '';
             const worker = await createWorker();
             await worker.loadLanguage('eng');
             await worker.initialize('eng');
-            const { data: { text } } = await worker.recognize(filePath);
-            text1 = text;
+            console.log('Converting PDF to images and performing OCR...');
+            for (const imagePath of images) {
+                try {
+                    const { data: { text } } = await worker.recognize(imagePath);
+                    fs.unlinkSync(imagePath); 
+                    trText += text + '\n';
+                } catch (err) {
+                    console.error(`Failed to OCR image ${imagePath}`, err);
+                }
+            }
+            text1 = trText.trim();
         }
-
-
-        // Remove the uploaded file
+        console.log('Extracted text:', text1);
         fs.unlink(filePath, (err) => {
             if (err) console.error('Failed to delete file:', err);
         });
+
+        if( !text1 || text1.length < 10) {
+            return res.status(400).json({ success: false, error: 'Failed to extract sufficient text from the file.' });
+        }
 
         // --- RAG Begins ---
         const chunks = chunkText(text1);
@@ -125,24 +138,24 @@ router.post('/', verifyUser,upload.single('file'), async (req, res) => {
 
         if (req.user && req.user.email) {
             const newQuiz = new Quiz({
-              email: req.user.email,
-              quizTitle: quizObj.quizTitle,
-              quizDescription: quizObj.quizDescription,
-              questions: quizObj.questions
+                email: req.user.email,
+                quizTitle: quizObj.quizTitle,
+                quizDescription: quizObj.quizDescription,
+                questions: quizObj.questions
             });
-      
+
             await newQuiz.save();
             console.log('Saved quiz for user:', req.user.email);
-          } else {
+        } else {
             console.log('Guest user, not saving quiz');
-          }
+        }
 
         console.log('Quiz Object:', quizObj);
         res.json({ success: true, quiz: quizObj });
 
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ success: false, error: error});
+        res.status(500).json({ success: false, error: error });
     }
 });
 

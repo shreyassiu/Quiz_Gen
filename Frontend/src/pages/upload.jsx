@@ -65,6 +65,10 @@ const Upload = () => {
       })
 
       const data = await response.json()
+      console.log(data)
+      if(!data.success) {
+        throw new Error(data.error || 'Failed to generate quiz')
+      }
       navigate('/quiz', { state: { quiz: data.quiz } })
       handleSuccess('Quiz generated successfully!')
     } catch (error) {
